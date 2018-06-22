@@ -341,8 +341,8 @@ Number.isFinite = Number.isFinite || function(value) {
 
 } // endif FEATURE_NO_ES2015
 
-if ((!String.prototype.endsWith) || ((function() { try { return !("ab".endsWith("a",1)); } catch (e) { return true; } } )())) {
-  String.prototype.endsWith = function(searchString, position) {
+if ((!String.prototype.endsWith) || ((function () { try { return !("ab".endsWith("a", 1)); } catch (e) { return true; } })())) {
+  String.prototype.endsWith = function (searchString, position) {
     let subjectString = this.toString();
     if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
       position = subjectString.length;
@@ -353,11 +353,65 @@ if ((!String.prototype.endsWith) || ((function() { try { return !("ab".endsWith(
   };
 }
 
-if ((!String.prototype.startsWith) || ((function() { try { return !("ab".startsWith("b", 1)); } catch (e) { return true; } } )())) {
-  String.prototype.startsWith = function(searchString, position){
+if ((!String.prototype.startsWith) || ((function () { try { return !("ab".startsWith("b", 1)); } catch (e) { return true; } })())) {
+  String.prototype.startsWith = function (searchString, position) {
     position = position || 0;
     return this.substr(position, searchString.length) === searchString;
   };
+}
+
+if (!String.prototype.includes || ((function () { try { return !("ab".includes("a")); } catch (e) { return true; } })())) {
+  String.prototype.includes = function (search, start) {
+    if (typeof start !== 'number') start = 0;
+
+    if (start + search.length > this.length) return false;
+    else return this.indexOf(search, start) !== -1;
+  };
+}
+
+if (!Array.prototype.fill) {
+  Object.defineProperty(Array.prototype, 'fill', {
+      value: function (value) {
+
+          // Steps 1-2.
+          if (this == null) {
+              throw new TypeError('this is null or not defined');
+          }
+
+          var O = Object(this);
+
+          // Steps 3-5.
+          var len = O.length >>> 0;
+
+          // Steps 6-7.
+          var start = arguments[1];
+          var relativeStart = start >> 0;
+
+          // Step 8.
+          var k = relativeStart < 0 ?
+              Math.max(len + relativeStart, 0) :
+              Math.min(relativeStart, len);
+
+          // Steps 9-10.
+          var end = arguments[2];
+          var relativeEnd = end === undefined ?
+              len : end >> 0;
+
+          // Step 11.
+          var final = relativeEnd < 0 ?
+              Math.max(len + relativeEnd, 0) :
+              Math.min(relativeEnd, len);
+
+          // Step 12.
+          while (k < final) {
+              O[k] = value;
+              k++;
+          }
+
+          // Step 13.
+          return O;
+      }
+  });
 }
 
 if (typeof FEATURE_NO_ES2015 === 'undefined') {
@@ -498,22 +552,34 @@ if (typeof FEATURE_NO_ES2016 === 'undefined' && !Array.prototype.includes) {
   });
 }
 
+if (!Object.entries) {
+  Object.entries = (obj) => {
+    let ownProps = Object.keys(obj),
+      i = ownProps.length,
+      resArray = new Array(i); // preallocate the Array
+    while (i--)
+      resArray[i] = [ownProps[i], obj[ownProps[i]]];
+
+    return resArray;
+  };
+}
+
 if (typeof FEATURE_NO_ES2015 === 'undefined') {
 
-(function() {
-  let needsFix = false;
+  (function () {
+    let needsFix = false;
 
-  //ES5 did not accept primitives, but ES6 does
-  try {
-    let s = Object.keys('a');
-    needsFix = (s.length !== 1 || s[0] !== '0');
-  } catch(e) {
-    needsFix = true;
-  }
+    //ES5 did not accept primitives, but ES6 does
+    try {
+      let s = Object.keys('a');
+      needsFix = (s.length !== 1 || s[0] !== '0');
+    } catch (e) {
+      needsFix = true;
+    }
 
-  if (needsFix) {
-    Object.keys = (function() {
-      var hasOwnProperty = Object.prototype.hasOwnProperty,
+    if (needsFix) {
+      Object.keys = (function () {
+        var hasOwnProperty = Object.prototype.hasOwnProperty,
           hasDontEnumBug = !({ toString: null }).propertyIsEnumerable('toString'),
           dontEnums = [
             'toString',
@@ -526,54 +592,54 @@ if (typeof FEATURE_NO_ES2015 === 'undefined') {
           ],
           dontEnumsLength = dontEnums.length;
 
-      return function(obj) {
-        if (obj === undefined || obj === null){
-          throw TypeError(`Cannot convert undefined or null to object`);
-        }
-
-        obj = Object(obj);
-
-        var result = [], prop, i;
-
-        for (prop in obj) {
-          if (hasOwnProperty.call(obj, prop)) {
-            result.push(prop);
+        return function (obj) {
+          if (obj === undefined || obj === null) {
+            throw TypeError(`Cannot convert undefined or null to object`);
           }
-        }
 
-        if (hasDontEnumBug) {
-          for (i = 0; i < dontEnumsLength; i++) {
-            if (hasOwnProperty.call(obj, dontEnums[i])) {
-              result.push(dontEnums[i]);
+          obj = Object(obj);
+
+          var result = [], prop, i;
+
+          for (prop in obj) {
+            if (hasOwnProperty.call(obj, prop)) {
+              result.push(prop);
             }
           }
-        }
 
-        return result;
-      };
-    }());
-  }
-}());
+          if (hasDontEnumBug) {
+            for (i = 0; i < dontEnumsLength; i++) {
+              if (hasOwnProperty.call(obj, dontEnums[i])) {
+                result.push(dontEnums[i]);
+              }
+            }
+          }
 
-(function (O) {
-  if ('assign' in O) {
-    return;
-  }
+          return result;
+        };
+      }());
+    }
+  }());
 
-  O.defineProperty(O, 'assign', {
+  (function (O) {
+    if ('assign' in O) {
+      return;
+    }
+
+    O.defineProperty(O, 'assign', {
       configurable: true,
       writable: true,
-      value: (function() {
+      value: (function () {
         var gOPS = O.getOwnPropertySymbols,
-            // shortcut without explicitly passing through prototype
-            pIE = O.propertyIsEnumerable,
-            filterOS = gOPS ?
-              function (self) {
-                return gOPS(self).filter(pIE, self);
-              } : function () {
-                // just empty Array won't do much within a .concat(...)
-                return Array.prototype;
-              };
+          // shortcut without explicitly passing through prototype
+          pIE = O.propertyIsEnumerable,
+          filterOS = gOPS ?
+            function (self) {
+              return gOPS(self).filter(pIE, self);
+            } : function () {
+              // just empty Array won't do much within a .concat(...)
+              return Array.prototype;
+            };
 
         return function assign(where) {
           // Object.create(null) and null objects in general
@@ -604,24 +670,24 @@ if (typeof FEATURE_NO_ES2015 === 'undefined') {
         };
       }())
     });
-}(Object));
+  }(Object));
 
-/**
- * Object.is() polyfill
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
- */
-if (!Object.is) {
-  Object.is = function(x, y) {
-    // SameValue algorithm
-    if (x === y) { // Steps 1-5, 7-10
-      // Steps 6.b-6.e: +0 != -0
-      return x !== 0 || 1 / x === 1 / y;
-    } else {
-     // Step 6.a: NaN == NaN
-     return x !== x && y !== y;
-    }
-  };
-}
+  /**
+   * Object.is() polyfill
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
+   */
+  if (!Object.is) {
+    Object.is = function (x, y) {
+      // SameValue algorithm
+      if (x === y) { // Steps 1-5, 7-10
+        // Steps 6.b-6.e: +0 != -0
+        return x !== 0 || 1 / x === 1 / y;
+      } else {
+        // Step 6.a: NaN == NaN
+        return x !== x && y !== y;
+      }
+    };
+  }
 
 } // endif FEATURE_NO_ES2015
 

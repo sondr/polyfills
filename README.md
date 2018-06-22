@@ -11,6 +11,7 @@ This library is part of the [Aurelia](http://www.aurelia.io/) platform and provi
 
 ## Polyfills included:
 - `Array.from`
+- `Array.prototype.fill`
 - `Array.prototype.find`
 - `Array.prototype.findIndex`
 - `Array.prototype.includes`
@@ -18,6 +19,7 @@ This library is part of the [Aurelia](http://www.aurelia.io/) platform and provi
 - `Number.isFinite`
 - `Number.isNaN`
 - `Object.assign`
+- `Object.entries`
 - `Object.is`
 - `Object.getOwnPropertySymbols`
 - `Reflect.construct`
@@ -28,6 +30,7 @@ This library is part of the [Aurelia](http://www.aurelia.io/) platform and provi
 - `Reflect.ownKeys`
 - `Set`
 - `String.prototype.endsWith`
+- `String.prototype.includes`
 - `String.prototype.startsWith`
 - `Symbol`
 - `WeakMap`

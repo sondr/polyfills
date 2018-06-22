@@ -4,7 +4,7 @@ define(['aurelia-pal'], function (_aureliaPal) {
   var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
     return typeof obj;
   } : function (obj) {
-    return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
   };
 
   if (typeof FEATURE_NO_ES2015 === 'undefined') {
@@ -316,6 +316,51 @@ define(['aurelia-pal'], function (_aureliaPal) {
     };
   }
 
+  if (!String.prototype.includes || function () {
+    try {
+      return !"ab".includes("a");
+    } catch (e) {
+      return true;
+    }
+  }()) {
+    String.prototype.includes = function (search, start) {
+      if (typeof start !== 'number') start = 0;
+
+      if (start + search.length > this.length) return false;else return this.indexOf(search, start) !== -1;
+    };
+  }
+
+  if (!Array.prototype.fill) {
+    Object.defineProperty(Array.prototype, 'fill', {
+      value: function value(_value) {
+        if (this == null) {
+          throw new TypeError('this is null or not defined');
+        }
+
+        var O = Object(this);
+
+        var len = O.length >>> 0;
+
+        var start = arguments[1];
+        var relativeStart = start >> 0;
+
+        var k = relativeStart < 0 ? Math.max(len + relativeStart, 0) : Math.min(relativeStart, len);
+
+        var end = arguments[2];
+        var relativeEnd = end === undefined ? len : end >> 0;
+
+        var final = relativeEnd < 0 ? Math.max(len + relativeEnd, 0) : Math.min(relativeEnd, len);
+
+        while (k < final) {
+          O[k] = _value;
+          k++;
+        }
+
+        return O;
+      }
+    });
+  }
+
   if (typeof FEATURE_NO_ES2015 === 'undefined') {
 
     if (!Array.from) {
@@ -453,6 +498,17 @@ define(['aurelia-pal'], function (_aureliaPal) {
         return false;
       }
     });
+  }
+
+  if (!Object.entries) {
+    Object.entries = function (obj) {
+      var ownProps = Object.keys(obj),
+          i = ownProps.length,
+          resArray = new Array(i);
+      while (i--) {
+        resArray[i] = [ownProps[i], obj[ownProps[i]]];
+      }return resArray;
+    };
   }
 
   if (typeof FEATURE_NO_ES2015 === 'undefined') {
@@ -770,88 +826,84 @@ define(['aurelia-pal'], function (_aureliaPal) {
   }
 
   if (typeof FEATURE_NO_ES2015 === 'undefined') {
-    (function () {
 
-      var bind = Function.prototype.bind;
+    var bind = Function.prototype.bind;
 
-      if (typeof _aureliaPal.PLATFORM.global.Reflect === 'undefined') {
-        _aureliaPal.PLATFORM.global.Reflect = {};
-      }
+    if (typeof _aureliaPal.PLATFORM.global.Reflect === 'undefined') {
+      _aureliaPal.PLATFORM.global.Reflect = {};
+    }
 
-      if (typeof Reflect.defineProperty !== 'function') {
-        Reflect.defineProperty = function (target, propertyKey, descriptor) {
-          if ((typeof target === 'undefined' ? 'undefined' : _typeof(target)) === 'object' ? target === null : typeof target !== 'function') {
-            throw new TypeError('Reflect.defineProperty called on non-object');
+    if (typeof Reflect.defineProperty !== 'function') {
+      Reflect.defineProperty = function (target, propertyKey, descriptor) {
+        if ((typeof target === 'undefined' ? 'undefined' : _typeof(target)) === 'object' ? target === null : typeof target !== 'function') {
+          throw new TypeError('Reflect.defineProperty called on non-object');
+        }
+        try {
+          Object.defineProperty(target, propertyKey, descriptor);
+          return true;
+        } catch (e) {
+          return false;
+        }
+      };
+    }
+
+    if (typeof Reflect.construct !== 'function') {
+      Reflect.construct = function (Target, args) {
+        if (args) {
+          switch (args.length) {
+            case 0:
+              return new Target();
+            case 1:
+              return new Target(args[0]);
+            case 2:
+              return new Target(args[0], args[1]);
+            case 3:
+              return new Target(args[0], args[1], args[2]);
+            case 4:
+              return new Target(args[0], args[1], args[2], args[3]);
           }
-          try {
-            Object.defineProperty(target, propertyKey, descriptor);
-            return true;
-          } catch (e) {
-            return false;
-          }
-        };
-      }
+        }
 
-      if (typeof Reflect.construct !== 'function') {
-        Reflect.construct = function (Target, args) {
-          if (args) {
-            switch (args.length) {
-              case 0:
-                return new Target();
-              case 1:
-                return new Target(args[0]);
-              case 2:
-                return new Target(args[0], args[1]);
-              case 3:
-                return new Target(args[0], args[1], args[2]);
-              case 4:
-                return new Target(args[0], args[1], args[2], args[3]);
-            }
-          }
+        var a = [null];
+        a.push.apply(a, args);
+        return new (bind.apply(Target, a))();
+      };
+    }
 
-          var a = [null];
-          a.push.apply(a, args);
-          return new (bind.apply(Target, a))();
-        };
-      }
-
-      if (typeof Reflect.ownKeys !== 'function') {
-        Reflect.ownKeys = function (o) {
-          return Object.getOwnPropertyNames(o).concat(Object.getOwnPropertySymbols(o));
-        };
-      }
-    })();
+    if (typeof Reflect.ownKeys !== 'function') {
+      Reflect.ownKeys = function (o) {
+        return Object.getOwnPropertyNames(o).concat(Object.getOwnPropertySymbols(o));
+      };
+    }
   }
 
   if (typeof FEATURE_NO_ESNEXT === 'undefined') {
-    (function () {
 
-      var emptyMetadata = Object.freeze({});
-      var metadataContainerKey = '__metadata__';
+    var emptyMetadata = Object.freeze({});
+    var metadataContainerKey = '__metadata__';
 
-      if (typeof Reflect.getOwnMetadata !== 'function') {
-        Reflect.getOwnMetadata = function (metadataKey, target, targetKey) {
-          if (target.hasOwnProperty(metadataContainerKey)) {
-            return (target[metadataContainerKey][targetKey] || emptyMetadata)[metadataKey];
-          }
+    if (typeof Reflect.getOwnMetadata !== 'function') {
+      Reflect.getOwnMetadata = function (metadataKey, target, targetKey) {
+        if (target.hasOwnProperty(metadataContainerKey)) {
+          return (target[metadataContainerKey][targetKey] || emptyMetadata)[metadataKey];
+        }
+      };
+    }
+
+    if (typeof Reflect.defineMetadata !== 'function') {
+      Reflect.defineMetadata = function (metadataKey, metadataValue, target, targetKey) {
+        var metadataContainer = target.hasOwnProperty(metadataContainerKey) ? target[metadataContainerKey] : target[metadataContainerKey] = {};
+        var targetContainer = metadataContainer[targetKey] || (metadataContainer[targetKey] = {});
+        targetContainer[metadataKey] = metadataValue;
+      };
+    }
+
+    if (typeof Reflect.metadata !== 'function') {
+      Reflect.metadata = function (metadataKey, metadataValue) {
+        return function (target, targetKey) {
+          Reflect.defineMetadata(metadataKey, metadataValue, target, targetKey);
         };
-      }
-
-      if (typeof Reflect.defineMetadata !== 'function') {
-        Reflect.defineMetadata = function (metadataKey, metadataValue, target, targetKey) {
-          var metadataContainer = target.hasOwnProperty(metadataContainerKey) ? target[metadataContainerKey] : target[metadataContainerKey] = {};
-          var targetContainer = metadataContainer[targetKey] || (metadataContainer[targetKey] = {});
-          targetContainer[metadataKey] = metadataValue;
-        };
-      }
-
-      if (typeof Reflect.metadata !== 'function') {
-        Reflect.metadata = function (metadataKey, metadataValue) {
-          return function (target, targetKey) {
-            Reflect.defineMetadata(metadataKey, metadataValue, target, targetKey);
-          };
-        };
-      }
-    })();
+      };
+    }
   }
 });

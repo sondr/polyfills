@@ -309,6 +309,51 @@ if (!String.prototype.startsWith || function () {
   };
 }
 
+if (!String.prototype.includes || function () {
+  try {
+    return !"ab".includes("a");
+  } catch (e) {
+    return true;
+  }
+}()) {
+  String.prototype.includes = function (search, start) {
+    if (typeof start !== 'number') start = 0;
+
+    if (start + search.length > this.length) return false;else return this.indexOf(search, start) !== -1;
+  };
+}
+
+if (!Array.prototype.fill) {
+  Object.defineProperty(Array.prototype, 'fill', {
+    value: function (value) {
+      if (this == null) {
+        throw new TypeError('this is null or not defined');
+      }
+
+      var O = Object(this);
+
+      var len = O.length >>> 0;
+
+      var start = arguments[1];
+      var relativeStart = start >> 0;
+
+      var k = relativeStart < 0 ? Math.max(len + relativeStart, 0) : Math.min(relativeStart, len);
+
+      var end = arguments[2];
+      var relativeEnd = end === undefined ? len : end >> 0;
+
+      var final = relativeEnd < 0 ? Math.max(len + relativeEnd, 0) : Math.min(relativeEnd, len);
+
+      while (k < final) {
+        O[k] = value;
+        k++;
+      }
+
+      return O;
+    }
+  });
+}
+
 if (typeof FEATURE_NO_ES2015 === 'undefined') {
 
   if (!Array.from) {
@@ -446,6 +491,17 @@ if (typeof FEATURE_NO_ES2016 === 'undefined' && !Array.prototype.includes) {
       return false;
     }
   });
+}
+
+if (!Object.entries) {
+  Object.entries = obj => {
+    let ownProps = Object.keys(obj),
+        i = ownProps.length,
+        resArray = new Array(i);
+    while (i--) resArray[i] = [ownProps[i], obj[ownProps[i]]];
+
+    return resArray;
+  };
 }
 
 if (typeof FEATURE_NO_ES2015 === 'undefined') {
